@@ -4,7 +4,6 @@ from spotipy.oauth2 import SpotifyClientCredentials
 client_credentials_manager = SpotifyClientCredentials()
 sp = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
 
-print(sp)
 
 # API call to get the current user info
 # GET: 200 
@@ -14,7 +13,7 @@ def get_user(username):
 
 # GET: retrieve an artist by ID
 def get_artist():
-    # Eminem ID= 7dGJo4pcD2V6oG8kP0tJRR
+    ''' TODO: make the id dynamically '''
     artist = sp.artist('7dGJo4pcD2V6oG8kP0tJRR')
     print(artist)
 
@@ -29,5 +28,3 @@ def get_artist_top_tracks():
                 #print('release date: ', tracks['album']['release_date'], '\n')
                 print('key: ', tracks['album'], '\n')   
 
-# Get 
-# get_user()
