@@ -11,9 +11,9 @@ class Home(Resource):
                 'Description': 'Simple Spotify API'}, 200
 
 class User(Resource):
-    def get(self):
+    def get(self, username):
         user = {}
-        spotify_user = spotify_api.get_user('hamse-90')
+        spotify_user = spotify_api.get_user(username)
         if spotify_user:
             user['id'] = spotify_user['id']
             user['display_name'] = spotify_user['display_name']
@@ -22,8 +22,32 @@ class User(Resource):
         else:
             return {'error': 'did not find the user'}, 404
 
+class Playlist(Resource):
+    def get(self, id):
+        pass
+
+class Me(Resource):
+    def get(self):
+        me = spotify_api.get_current_user_detail()
+        return {'me' : me}, 200
+
+class PlayingTrack(Resource):
+    def get(self):
+        pass
+
+class User_playlists(Resource):
+    def get(self, username, limit):
+        playlists = spotify_api.user_playlist(username, limit)
+        return { 'playlists' : playlists }, 200
+
 api.add_resource(Home, '/')
-api.add_resource(User, '/user/')
+api.add_resource(Me, '/me')
+api.add_resource(User, '/user/<username>')
+api.add_resource(User_playlists, '/user/<username>/playlists/<int:limit>')
+api.add_resource(Playlist, '/playlist/<id>')
+
+
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5001, debug=True)
