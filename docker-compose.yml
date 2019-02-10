@@ -9,3 +9,12 @@ services:
       - ./api/:/usr/src/app
     env_file:
       - .env
+  discord_bot:
+    build: chatbot/
+    volumes:
+      - ./chatbot/:/src/
+    container_name: discord_bot
+    env_file:
+      - bot.env
+    depends_on:
+      - spotify_api
