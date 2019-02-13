@@ -1,13 +1,15 @@
 FROM golang:alpine AS builder
-WORKDIR /app
-
+RUN export GOPATH=${HOME}/project1/chatbot
+WORKDIR $GOPATH/chatbot/
+RUN echo "etter workdir: " + $(pwd)
 # Getting dependencies
 RUN apk update && apk add --no-cache git
 RUN go get -u github.com/bwmarrin/discordgo
 
-ADD . /app
+ADD . .
 # RUN GOOS=linux GOARCH=amd64 go build -ldflags="-w -s" -o /app/goapp
-RUN cd /app && go build -o goapp
+RUN pwd
+RUN go build -o goapp
 ENTRYPOINT ./goapp
 
 # TODO: Make the image smaller

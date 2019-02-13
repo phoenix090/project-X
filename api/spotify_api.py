@@ -50,7 +50,7 @@ def get_current_user_detail():
 def user_playlist(user=None, cap=5):
     if user == 'none':
         user = username
-    playlists = sp.user_playlists(user, cap)
+    playlists = sp.user_playlists(user, limit=int(cap))
     plists = {}
     plists['total'] = playlists['total']
     plists['limit'] = playlists['limit']

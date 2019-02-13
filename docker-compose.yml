@@ -12,9 +12,11 @@ services:
   discord_bot:
     build: chatbot/
     volumes:
-      - ./chatbot/:/src/
+      - ./chatbot/:/app/
     container_name: discord_bot
     env_file:
       - bot.env
     depends_on:
       - spotify_api
+    links:
+      - "spotify_api:api"

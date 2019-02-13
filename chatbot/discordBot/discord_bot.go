@@ -2,10 +2,13 @@ package discordBot
 
 import (
 	"fmt"
+	"io/ioutil"
 	"log"
 	"math/rand"
+	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 
@@ -56,6 +59,16 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	if m.Author.ID == s.State.User.ID {
 		return
 	}
+	args := strings.Split(m.Content, "/")
+
+	fmt.Println(len(args))
+	if strings.HasPrefix(m.Content, "!user/") && len(args) == 2 {
+		getUserInfo(s, m)
+		return
+	} else if strings.HasPrefix(m.Content, "!user/") && len(args) == 4 {
+		getUserPlaylists(s, m, args)
+		return
+	}
 
 	switch m.Content {
 	case "greeting", "hi", "hello", "hey", "hei", "hola", "yo", "wassup", "sup":
@@ -66,16 +79,102 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		calculate(s, m)
 	case "!ping", "!pong":
 		pingPong(s, m)
-
+	case "!me":
+		meSpotify(s, m)
+	case "!api", "!spotify":
+		getAPIInfo(s, m)
 	//case "!apps":
 	//	apps(s, m)
 	default:
 		fmt.Println(m.Content)
 		s.ChannelMessageSend(m.ChannelID, "Say what?")
 	}
+}
+
+// api.add_resource(User_playlists, '/user/<username>/playlists/<int:limit>')
+func getUserPlaylists(s *discordgo.Session, m *discordgo.MessageCreate, params []string) {
+
+	if len(params) != 4 {
+		s.ChannelMessageSend(m.ChannelID, "Expected 4 args, got "+string(len(params)))
+		return
+	}
+
+	url := "http://spotify_api:5001/user/" + params[1] + "/" + params[2] + "/" + params[3]
+	fmt.Println(url)
+
+	resp, err := http.Get(url)
+	if err != nil || len(params) != 4 {
+		s.ChannelMessageSend(m.ChannelID, "Error getting playlists for the user!")
+		fmt.Println(err)
+		return
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		s.ChannelMessageSend(m.ChannelID, "Error getting the user!")
+		return
+	}
+	res := string(body)
+	s.ChannelMessageSend(m.ChannelID, res)
+}
+
+// Getting basic user info from the api
+func getUserInfo(s *discordgo.Session, m *discordgo.MessageCreate) {
+	params := strings.Split(m.Content, "/")
+	if len(params) != 2 {
+		s.ChannelMessageSend(m.ChannelID, "Wrong number of args given! Expected '!user/bob'")
+		return
+	}
+	resp, err := http.Get("http://spotify_api:5001/user/" + params[1])
+	if err != nil {
+		s.ChannelMessageSend(m.ChannelID, "Error getting the user!")
+		return
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		s.ChannelMessageSend(m.ChannelID, "Error getting the user!")
+		return
+	}
+	res := string(body)
+	s.ChannelMessageSend(m.ChannelID, res)
 
 }
 
+// Getting basic API info from the api
+func getAPIInfo(s *discordgo.Session, m *discordgo.MessageCreate) {
+	fmt.Println("Prøver å kontakte api serveren")
+	resp, err := http.Get("http://spotify_api:5001/")
+	if err != nil {
+		s.ChannelMessageSend(m.ChannelID, "Error from the api!")
+		return
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		s.ChannelMessageSend(m.ChannelID, "Error from the api!")
+		return
+	}
+	res := string(body)
+	s.ChannelMessageSend(m.ChannelID, res)
+}
+
+// Getting current user info from spotify API.
+func meSpotify(s *discordgo.Session, m *discordgo.MessageCreate) {
+	resp, err := http.Get("http://spotify_api:5001/me")
+	if err != nil {
+		log.Fatalf("Got error while making request to spotify API (/me), %v", err)
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Fatalf("Error while reading body %v", err)
+	}
+	res := string(body)
+	s.ChannelMessageSend(m.ChannelID, res)
+}
+
+// Handles greetings
 func greeting(s *discordgo.Session, m *discordgo.MessageCreate) {
 	answers := []string{"Salutations!", "Greetings!", "Hey there!", "Hello!", "Welcome back!", "Hola!", "Hi! :)", ":wave:"}
 	sec := time.Now().Second()

@@ -43,10 +43,8 @@ class User_playlists(Resource):
 api.add_resource(Home, '/')
 api.add_resource(Me, '/me')
 api.add_resource(User, '/user/<username>')
-api.add_resource(User_playlists, '/user/<username>/playlists/<int:limit>')
+api.add_resource(User_playlists, '/user/<username>/playlists/<limit>')
 api.add_resource(Playlist, '/playlist/<id>')
-
-
 
 
 if __name__ == '__main__':
