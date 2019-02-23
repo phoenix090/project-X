@@ -1,6 +1,7 @@
 import spotipy, sys, os
 from spotipy.oauth2 import SpotifyClientCredentials
 import spotipy.util as util
+import json
 
 scope = 'user-library-read'
 
@@ -26,10 +27,25 @@ def get_user(username):
     return user
 
 # GET: retrieve an artist by ID
-def get_artist():
-    ''' TODO: make the id dynamically '''
-    artist = sp.artist('7dGJo4pcD2V6oG8kP0tJRR')
-    print(artist)
+''' TODO: make the id dynamically '''
+def get_artist(choice):
+    valid=['album','single','appears_on','compilation']
+    song_list= []
+    if choice in valid:
+        artist = sp.artist_albums('3TVXtAsR1Inumwj472S9r4',album_type=choice,limit=20)
+        for item in artist['items']:
+            song={}
+            song['name'] = item['name']
+            song['release_date'] = item['release_date']
+            song_list.append(song)
+    else:
+        artist = sp.artist_albums('3TVXtAsR1Inumwj472S9r4',album_type='album',limit=20)
+        for item in artist['items']:
+            song={}
+            song['name'] = item['name']
+            song['release_date'] = item['release_date']
+            song_list.append(song)
+    return song_list
 
 # GET: gets an artist's top tracks, use COUNTY to limit the request
 def get_artist_top_tracks():
@@ -44,7 +60,9 @@ def get_artist_top_tracks():
 
 # Gets detailed information about the current user
 def get_current_user_detail():
-    return sp.me()
+    var=sp.me()
+    return(var['display_name'])
+    #return sp.me()
 
 # Get information about the current users currently playing track
 def user_playlist(user=None, cap=5):

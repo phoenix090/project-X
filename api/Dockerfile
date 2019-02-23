@@ -1,6 +1,5 @@
 FROM python:3.5.1-onbuild
 
-MAINTAINER Hamse
 
 WORKDIR /usr/src/app
 
