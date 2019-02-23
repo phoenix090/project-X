@@ -40,11 +40,17 @@ class User_playlists(Resource):
         playlists = spotify_api.user_playlist(username, limit)
         return { 'playlists' : playlists }, 200
 
+class User_Top_Tracks(Resource):
+    def get(self):
+        tracks = spotify_api.get_current_user_top_tracks()
+        return {'tracks' : tracks}
+
 api.add_resource(Home, '/')
 api.add_resource(Me, '/me')
 api.add_resource(User, '/user/<username>')
 api.add_resource(User_playlists, '/user/<username>/playlists/<limit>')
 api.add_resource(Playlist, '/playlist/<id>')
+api.add_resource(User_Top_Tracks, '/tracks')
 
 
 if __name__ == '__main__':

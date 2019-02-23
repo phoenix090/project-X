@@ -70,8 +70,8 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		return
 	}
 
-	switch m.Content {
-	case "greeting", "hi", "hello", "hey", "hei", "hola", "yo", "wassup", "sup":
+	switch strings.ToLower(m.Content) {
+	case "greeting", "hi", "hello", "hey", "hei", "hola", "yo", "wassup", "sup", "halla":
 		greeting(s, m)
 	case "!author", "whoami", "myname":
 		author(s, m)

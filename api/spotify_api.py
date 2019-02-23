@@ -46,6 +46,12 @@ def get_artist_top_tracks():
 def get_current_user_detail():
     return sp.me()
 
+# gets the current users top tracks
+def get_current_user_top_tracks():
+    tracks = sp.current_user_top_tracks(limit=5)
+    print(tracks)
+    return tracks
+
 # Get information about the current users currently playing track
 def user_playlist(user=None, cap=5):
     if user == 'none':
