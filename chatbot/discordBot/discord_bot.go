@@ -1,6 +1,7 @@
 package discordBot
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -83,12 +84,55 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		meSpotify(s, m)
 	case "!api", "!spotify":
 		getAPIInfo(s, m)
+	case "!norris", "chuck":
+		getNorrisJokes(s, m)
+	case "!trump", "!Tjokes":
+		fmt.Println(m.Content)
+		getTrumpJoke(s, m)
 	//case "!apps":
 	//	apps(s, m)
 	default:
 		fmt.Println(m.Content)
 		s.ChannelMessageSend(m.ChannelID, "Say what?")
 	}
+}
+
+// api.add_resource(User_playlists, '/user/<username>/playlists/<int:limit>')
+func getTrumpJoke(s *discordgo.Session, m *discordgo.MessageCreate) {
+
+	url := "http://spotify_api:5001/tjokes"
+
+	resp, err := http.Get(url)
+	if err != nil {
+		s.ChannelMessageSend(m.ChannelID, "Error getting Tjokes!")
+		fmt.Println(err)
+		return
+	}
+	var tjoke TJoke
+	defer resp.Body.Close()
+	if err := json.NewDecoder(resp.Body).Decode(&tjoke); err != nil {
+		s.ChannelMessageSend(m.ChannelID, "Error parsing into json xP")
+		return
+	}
+	s.ChannelMessageSend(m.ChannelID, tjoke.Value)
+}
+
+// Gets random chuck norris jokes :P
+func getNorrisJokes(s *discordgo.Session, m *discordgo.MessageCreate) {
+	resp, err := http.Get("https://api.chucknorris.io/jokes/random")
+	if err != nil {
+		s.ChannelMessageSend(m.ChannelID, "Error getting Norris jokes xP")
+		return
+	}
+
+	var joke Joke
+	defer resp.Body.Close()
+	if err := json.NewDecoder(resp.Body).Decode(&joke); err != nil {
+		s.ChannelMessageSend(m.ChannelID, "Error getting Norris jokes xP")
+		return
+	}
+	fmt.Println(joke)
+	s.ChannelMessageSend(m.ChannelID, joke.Value)
 }
 
 // api.add_resource(User_playlists, '/user/<username>/playlists/<int:limit>')

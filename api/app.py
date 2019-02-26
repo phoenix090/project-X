@@ -5,6 +5,7 @@ from flask_restful import Resource, Api
 app = Flask(__name__)
 api = Api(app)
 
+
 class Home(Resource):
     def get(self):
         return { 'API version': '0.0.1',
@@ -49,14 +50,19 @@ class User_Top_Tracks(Resource):
         tracks = spotify_api.get_current_user_top_tracks()
         return {'tracks' : tracks}
 
+class Tronald_Dump(Resource):
+    def get(self):
+        trump=spotify_api.DJT()
+        return {'haha_joke' : trump} 
+
 api.add_resource(Home, '/')
 api.add_resource(Me, '/me')
 api.add_resource(User, '/user/<username>')
 api.add_resource(User_playlists, '/user/<username>/playlists/<limit>')
 api.add_resource(Playlist, '/playlist/<id>')
-api.add_resource(User_Top_Tracks, '/tracks')
+#api.add_resource(User_Top_Tracks, '/tracks')
 api.add_resource(Get_artist_songs, '/library/<choice>')
-
+api.add_resource(Tronald_Dump, '/tjokes')
 
 
 if __name__ == '__main__':

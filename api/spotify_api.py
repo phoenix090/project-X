@@ -1,6 +1,8 @@
 import spotipy, sys, os
 from spotipy.oauth2 import SpotifyClientCredentials
 import spotipy.util as util
+import json
+import urllib3 
 
 scope = 'user-library-read'
 
@@ -92,5 +94,12 @@ def user_playlist(user=None, cap=5):
         plists[key] = p 
         ant += 1
     return plists
+
+def DJT():
+    http = urllib3.PoolManager()
+    r = http.request('GET','https://api.tronalddump.io/random/quote')
+    data = r.data.decode('utf-8')
+    resp = json.loads(data)
+    return resp['value']
     
 
