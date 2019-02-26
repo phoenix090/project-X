@@ -84,10 +84,9 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		meSpotify(s, m)
 	case "!api", "!spotify":
 		getAPIInfo(s, m)
-	case "!norris", "chuck":
+	case "!norris", "!chuck":
 		getNorrisJokes(s, m)
 	case "!trump", "!Tjokes":
-		fmt.Println(m.Content)
 		getTrumpJoke(s, m)
 	//case "!apps":
 	//	apps(s, m)
@@ -97,7 +96,7 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	}
 }
 
-// api.add_resource(User_playlists, '/user/<username>/playlists/<int:limit>')
+// For random DT jokes
 func getTrumpJoke(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 	url := "http://spotify_api:5001/tjokes"
