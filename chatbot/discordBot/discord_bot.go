@@ -86,14 +86,50 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		getAPIInfo(s, m)
 	case "!norris", "!chuck":
 		getNorrisJokes(s, m)
-	case "!trump", "!Tjokes":
+	case "!trump", "!tjokes":
 		getTrumpJoke(s, m)
+	case "!current song", "!listening on?", "!which song", ":musical_note:":
+		getCurrentSong(s, m)
 	//case "!apps":
 	//	apps(s, m)
 	default:
 		fmt.Println(m.Content)
 		s.ChannelMessageSend(m.ChannelID, "Say what?")
 	}
+}
+
+// Gets current playing spotify song
+func getCurrentSong(s *discordgo.Session, m *discordgo.MessageCreate) {
+	resp, err := http.Get("http://spotify_api:5001/current_song")
+	if err != nil {
+		s.ChannelMessageSend(m.ChannelID, "Error from the api!")
+		return
+	}
+
+	var song CurrentSongWrapper
+	defer resp.Body.Close()
+	if err := json.NewDecoder(resp.Body).Decode(&song); err != nil {
+		s.ChannelMessageSend(m.ChannelID, "Error parsing into json xP")
+		return
+	}
+	fmt.Println(song)
+	var reply string
+	if song.Response.Error {
+		reply = "Response code not 200, got response code" + string(song.Response.ErrorCode)
+		s.ChannelMessageSend(m.ChannelID, reply)
+		return
+	}
+	reply = "You are currently listening to: " + song.Response.Name + "\nArtists: "
+	for _, name := range song.Response.Artists {
+		reply += name + " "
+	}
+	reply += "\nRelease date: " + song.Response.ReleaseDate
+	if song.Response.IsPlaying {
+		reply += "\nis_playing: is playing now"
+	} else {
+		reply += "\nis_playing: is not playing now"
+	}
+	s.ChannelMessageSend(m.ChannelID, reply)
 }
 
 // For random DT jokes
@@ -130,7 +166,6 @@ func getNorrisJokes(s *discordgo.Session, m *discordgo.MessageCreate) {
 		s.ChannelMessageSend(m.ChannelID, "Error getting Norris jokes xP")
 		return
 	}
-	fmt.Println(joke)
 	s.ChannelMessageSend(m.ChannelID, joke.Value)
 }
 
@@ -186,7 +221,7 @@ func getUserInfo(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 // Getting basic API info from the api
 func getAPIInfo(s *discordgo.Session, m *discordgo.MessageCreate) {
-	fmt.Println("Prøver å kontakte api serveren")
+	//fmt.Println("Prøver å kontakte api serveren")
 	resp, err := http.Get("http://spotify_api:5001/")
 	if err != nil {
 		s.ChannelMessageSend(m.ChannelID, "Error from the api!")
