@@ -34,7 +34,11 @@ class Me(Resource):
 
 class PlayingTrack(Resource):
     def get(self):
-        pass
+        resp = spotify_api.get_current_playing_song()
+        if resp['error']:
+            return {"response" : resp}, resp['error_code']
+        else:
+            return {"response" : resp}, resp['error_code']
 
 class User_playlists(Resource):
     def get(self, username, limit):
@@ -55,8 +59,10 @@ class Tronald_Dump(Resource):
         trump=spotify_api.DJT()
         return {'haha_joke' : trump} 
 
-spotify_api.get_artist_id("0TnOYISbd1XYRBk9myaseg")
+#spotify_api.get_artist_id("0TnOYISbd1XYRBk9myaseg")
 
+
+# spotify_api.get_current_playing_song()
 api.add_resource(Home, '/')
 api.add_resource(Me, '/me')
 api.add_resource(User, '/user/<username>')
@@ -65,6 +71,7 @@ api.add_resource(Playlist, '/playlist/<id>')
 #api.add_resource(User_Top_Tracks, '/tracks')
 api.add_resource(Get_artist_songs, '/library/<choice>')
 api.add_resource(Tronald_Dump, '/tjokes')
+api.add_resource(PlayingTrack, '/current_song')
 
 
 if __name__ == '__main__':

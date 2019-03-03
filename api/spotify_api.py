@@ -2,12 +2,13 @@ import spotipy, sys, os
 from spotipy.oauth2 import SpotifyClientCredentials
 import spotipy.util as util
 import json
-import urllib3, requests
+import urllib3
+import requests
 
 my_token = os.getenv('MY_TOKEN')
+username = os.getenv('USERNAME')
 scope = 'user-library-read'
 client_credentials_manager = SpotifyClientCredentials()
-username = os.getenv('USERNAME')
 token = util.prompt_for_user_token(username, scope)
 if not token:
     print('Something went wrong, exiting')
@@ -108,3 +109,25 @@ def DJT():
     resp = json.loads(data)
     return resp['value']
     
+# Retrives the current user's playing song.
+def get_current_playing_song():
+    # GET: /v1/me/player/recently-played
+    r = requests.get('https://api.spotify.com/v1/me/player/currently-playing', headers={'Authorization': 'Bearer ' + my_token})
+    data = {}
+    if r.status_code != 200:
+        data['error'] = True
+        data['error_code'] = r.status_code
+        return data
+    resp = r.json()
+    data['error'] = False
+    data['error_code'] = r.status_code
+    #song = {"artist" : data['data']['item']['album'], "song": data['data']}
+    artists = []
+    for artist in resp['item']['artists']:
+        artists.append(artist['name'])
+    data['name'] = resp['item']['name']
+    data['release_date'] = resp['item']['album']['release_date']
+    data['artists'] = artists
+    data['is_playing'] = resp['is_playing']
+    #data['data'] = resp
+    return data
