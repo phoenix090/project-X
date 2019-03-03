@@ -2,17 +2,16 @@ import spotipy, sys, os
 from spotipy.oauth2 import SpotifyClientCredentials
 import spotipy.util as util
 import json
-import urllib3 
+import urllib3, requests
 
+my_token = os.getenv('MY_TOKEN')
 scope = 'user-library-read'
-
 client_credentials_manager = SpotifyClientCredentials()
 username = os.getenv('USERNAME')
 token = util.prompt_for_user_token(username, scope)
 if not token:
     print('Something went wrong, exiting')
     exit(1)
-
 sp = spotipy.Spotify(token, True, client_credentials_manager=client_credentials_manager)
 user = sp.user(username)
 
@@ -20,7 +19,14 @@ if not sp:
     print('Something went wrong, exiting')
     exit(1)
 
-
+def get_artist_id(id):
+    r = requests.get(' https://api.spotify.com/v1/artists/'+id, headers = {'Authorization':'Bearer '+ my_token})
+    dat = r.json()
+    alist = []
+    alist.append(dat['name'])
+    alist.append(dat['genres'])
+    print(dat['name'],dat['genres'])
+    return alist
 # API call to get the current user info
 # GET: 200 
 def get_user(username):
@@ -102,4 +108,3 @@ def DJT():
     resp = json.loads(data)
     return resp['value']
     
-

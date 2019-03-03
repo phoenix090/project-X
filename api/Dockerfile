@@ -1,6 +1,5 @@
 FROM python:3.5.1-onbuild
 
-MAINTAINER JimBob
 
 WORKDIR /usr/src/app
 

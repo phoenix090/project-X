@@ -55,6 +55,8 @@ class Tronald_Dump(Resource):
         trump=spotify_api.DJT()
         return {'haha_joke' : trump} 
 
+spotify_api.get_artist_id("0TnOYISbd1XYRBk9myaseg")
+
 api.add_resource(Home, '/')
 api.add_resource(Me, '/me')
 api.add_resource(User, '/user/<username>')
