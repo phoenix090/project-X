@@ -1,6 +1,7 @@
 package discordBot
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -9,6 +10,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strconv"
 	"strings"
 	"syscall"
 	"time"
@@ -88,14 +90,98 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		getNorrisJokes(s, m)
 	case "!trump", "!tjokes":
 		getTrumpJoke(s, m)
-	case "!current song", "!listening on?", "!which song", ":musical_note:":
+	case "!current song", "!listening on?", "!which song", "song":
 		getCurrentSong(s, m)
+	case "!devices", "!devs", "!enheter":
+		getDevices(s, m)
+	case "!next", "!next song", "!play next":
+		playNext(s, m)
+	case "!back", "!previous song", "!play back":
+		playPrevious(s, m)
 	//case "!apps":
 	//	apps(s, m)
 	default:
 		fmt.Println(m.Content)
 		s.ChannelMessageSend(m.ChannelID, "Say what?")
 	}
+}
+
+// Plays previous song
+func playPrevious(s *discordgo.Session, m *discordgo.MessageCreate) {
+	values := map[string]string{"change": "song"}
+	jsonValue, _ := json.Marshal(values)
+	resp, err := http.Post("http://spotify_api:5001/previous", "application/json", bytes.NewBuffer(jsonValue))
+	if err != nil {
+		s.ChannelMessageSend(m.ChannelID, "Oppps, error making request")
+		return
+	}
+
+	fmt.Println(resp.StatusCode)
+	if resp.StatusCode != 204 {
+		s.ChannelMessageSend(m.ChannelID, "Oppps, got unexpected error code")
+		return
+	}
+	s.ChannelMessageSend(m.ChannelID, "Enjoy :musical_note:")
+}
+
+// Plays next song
+func playNext(s *discordgo.Session, m *discordgo.MessageCreate) {
+	values := map[string]string{"change": "song"}
+	jsonValue, _ := json.Marshal(values)
+	resp, err := http.Post("http://spotify_api:5001/next", "application/json", bytes.NewBuffer(jsonValue))
+	if err != nil {
+		s.ChannelMessageSend(m.ChannelID, "Oppps, error making request")
+		return
+	}
+
+	fmt.Println(resp.StatusCode)
+	if resp.StatusCode != 204 {
+		s.ChannelMessageSend(m.ChannelID, "Oppps, got unexpected error code")
+		return
+	}
+	s.ChannelMessageSend(m.ChannelID, "Enjoy :musical_note:")
+}
+
+// Gets all devices you are listening spotify on.
+func getDevices(s *discordgo.Session, m *discordgo.MessageCreate) {
+	resp, err := http.Get("http://spotify_api:5001/devices")
+	if err != nil {
+		s.ChannelMessageSend(m.ChannelID, "Error from the api!")
+		return
+	}
+
+	var devices Response
+	defer resp.Body.Close()
+	if err := json.NewDecoder(resp.Body).Decode(&devices); err != nil {
+		s.ChannelMessageSend(m.ChannelID, "Error parsing into json xP")
+		return
+	}
+	fmt.Println(devices)
+	var reply string
+	code := strconv.Itoa(devices.Response.StatusCode)
+	if devices.Response.StatusCode != 200 {
+		reply = "Response code not 200, got response code" + code
+		s.ChannelMessageSend(m.ChannelID, reply)
+		return
+	}
+
+	count := strconv.Itoa(len(devices.Response.Devices))
+	reply = "Nr of devices: " + count + "\n"
+	for k, v := range devices.Response.Devices {
+		index := strconv.Itoa(k + 1)
+		reply += "\nDevice_nr: " + index
+		if v.IsActive {
+			reply += "\nIsActice: " + "True"
+		} else {
+			reply += "\nIsActice: " + "False"
+		}
+		reply += "\nName: " + v.Name
+		reply += "\nType: " + v.Type
+		vPercent := strconv.Itoa(v.VolumePercent)
+		reply += "\nVolumePercent: " + vPercent + "\n"
+	}
+
+	s.ChannelMessageSend(m.ChannelID, reply)
 }
 
 // Gets current playing spotify song
@@ -112,7 +198,7 @@ func getCurrentSong(s *discordgo.Session, m *discordgo.MessageCreate) {
 		s.ChannelMessageSend(m.ChannelID, "Error parsing into json xP")
 		return
 	}
-	fmt.Println(song)
+
 	var reply string
 	if song.Response.Error {
 		reply = "Response code not 200, got response code" + string(song.Response.ErrorCode)
@@ -125,9 +211,9 @@ func getCurrentSong(s *discordgo.Session, m *discordgo.MessageCreate) {
 	}
 	reply += "\nRelease date: " + song.Response.ReleaseDate
 	if song.Response.IsPlaying {
-		reply += "\nis_playing: is playing now"
+		reply += "\nis_playing: Yes"
 	} else {
-		reply += "\nis_playing: is not playing now"
+		reply += "\nis_playing: No"
 	}
 	s.ChannelMessageSend(m.ChannelID, reply)
 }

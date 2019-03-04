@@ -111,23 +111,54 @@ def DJT():
     
 # Retrives the current user's playing song.
 def get_current_playing_song():
-    # GET: /v1/me/player/recently-played
     r = requests.get('https://api.spotify.com/v1/me/player/currently-playing', headers={'Authorization': 'Bearer ' + my_token})
     data = {}
-    if r.status_code != 200:
-        data['error'] = True
-        data['error_code'] = r.status_code
-        return data
-    resp = r.json()
-    data['error'] = False
     data['error_code'] = r.status_code
-    #song = {"artist" : data['data']['item']['album'], "song": data['data']}
+    if r.status_code != 200:
+        return data
+
+    resp = r.json()
     artists = []
     for artist in resp['item']['artists']:
         artists.append(artist['name'])
+
     data['name'] = resp['item']['name']
     data['release_date'] = resp['item']['album']['release_date']
     data['artists'] = artists
     data['is_playing'] = resp['is_playing']
-    #data['data'] = resp
+    return data
+
+
+''' GET: gets a User's Available Devices '''
+def available_devices():
+    data = {}
+    r = requests.get('https://api.spotify.com/v1/me/player/devices', headers={'Authorization': 'Bearer ' + my_token})
+    resp = r.json()
+    print(resp)
+    ''' Checking for bad response code '''
+    data['error_code'] = r.status_code
+    if r.status_code != 200:
+        return data
+
+    devices = []
+    for device in resp['devices']:
+        devices.append(device)
+    
+    data['devices'] = devices
+    return data
+
+''' POST: plays the next song'''
+def play_next():
+    data = {}
+    params = {'Accept': 'application/json', 'Content-Type': 'application/json', 'Authorization': 'Bearer '+ my_token}
+    r = requests.post('https://api.spotify.com/v1/me/player/next', headers=params)
+    data['status_code'] = r.status_code
+    return data
+
+'''POST: plays the previous song '''
+def play_previous_song():
+    data = {}
+    params = {'Accept': 'application/json', 'Content-Type': 'application/json', 'Authorization': 'Bearer '+ my_token}
+    r = requests.post('https://api.spotify.com/v1/me/player/previous', headers=params)
+    data['status_code'] = r.status_code
     return data
