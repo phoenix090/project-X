@@ -14,46 +14,13 @@ SCOPE = '''user-read-recently-played user-top-read user-library-read playlist-re
 
 client_credentials_manager = SpotifyClientCredentials()
 TOKEN = util.prompt_for_user_token(USERNAME, SCOPE)
-#print(TOKEN)
 SPOTIPY_REDIRECT_URI = os.getenv('SPOTIPY_REDIRECT_URI')
 SPOTIPY_CLIENT_ID = os.getenv('SPOTIPY_CLIENT_ID')
 SPOTIPY_CLIENT_SECRET = os.getenv('SPOTIPY_CLIENT_SECRET')
 REFRESH_TOKEN = ""
 CASHE_PATH = os.getenv('CASHE_PATH')
 
-# if not TOKEN:
-#     print('Something went wrong, exiting')
-#     exit(1)
-#sp = spotipy.Spotify(TOKEN, True, client_credentials_manager=client_credentials_manager)
 OAUTH = spotipy.oauth2.SpotifyOAuth(SPOTIPY_CLIENT_ID, SPOTIPY_CLIENT_SECRET, SPOTIPY_REDIRECT_URI, SCOPE, CASHE_PATH)
-# try:
-#     with open('.cache-' + USERNAME) as f:
-#         content = f.read()
-#         token_info = json.loads(content)
-    
-#     print(token_info)
-#     if OAUTH._is_token_expired(token_info):
-#         TOKEN = OAUTH.get_access_token(TOKEN)
-#         print(TOKEN)
-#         OAUTH._save_token_info(TOKEN)
-#         print(TOKEN)
-#     else:
-#         print("has not expired..")
-# except IOError as e:
-#     print("Noe gikk galt: ", e)
-
-#AUTH_URL = OAUTH.get_authorize_url()
-#TOKEN_DETAILS = requests.get(AUTH_URL)
-# if TOKEN_DETAILS.status_code == 200:
-    # resp = TOKEN_DETAILS.json()
-    # print(resp)
-
-
-# user = sp.user(USERNAME)
-
-# if not sp:
-#     print('Something went wrong, exiting')
-#     exit(1)
 
 def get_artist_id(id):
     r = requests.get(' https://api.spotify.com/v1/artists/'+id, headers = {'Authorization':'Bearer '+ TOKEN})
@@ -69,7 +36,6 @@ def get_artist_id(id):
 def get_user(uname):
     url = 'https://api.spotify.com/v1/users/' + uname
     params = {'Content-Type' : 'application/json', 'Authorization': 'Bearer ' + TOKEN}
-    data = {}
 
     r = requests.get(url, headers=params)
     if r.status_code == 401:
@@ -82,37 +48,11 @@ def get_user(uname):
 ''' TODO: make the id dynamically '''
 def get_artist(choice):
     pass
-#     valid=['album','single','appears_on','compilation']
-#     song_list= []
-#     if choice in valid:
-#         artist = sp.artist_albums('3TVXtAsR1Inumwj472S9r4',album_type=choice,limit=20)
-#         for item in artist['items']:
-#             song={}
-#             song['name'] = item['name']
-#             song['release_date'] = item['release_date']
-#             song_list.append(song)
-#     else:
-#         artist = sp.artist_albums('3TVXtAsR1Inumwj472S9r4',album_type='album',limit=20)
-#         for item in artist['items']:
-#             song={}
-#             song['name'] = item['name']
-#             song['release_date'] = item['release_date']
-#             song_list.append(song)
-#     return song_list
 
 # GET: gets an artist's top tracks, use COUNTY to limit the request
 def get_artist_top_tracks():
     pass
-    # top_tracks = sp.artist_top_tracks('2YZyLoL8N0Wb9xBt1NhZWg')
-    # for tracks in top_tracks['tracks']:
-    #     for album in tracks:
-    #         if album == 'album':
-    #             #print('name: ', tracks['album']['name'], '\n')
-    #             #print('total tracks: ', tracks['album']['total_tracks'], '\n')
-    #             #print('release date: ', tracks['album']['release_date'], '\n')
-    #             print('key: ', tracks['album'], '\n')   
-
-# Gets detailed information about the current user
+    
 def get_current_user_detail():
     url = 'https://api.spotify.com/v1/me'
     params = {'Content-Type' : 'application/json', 'Authorization': 'Bearer ' + TOKEN}
