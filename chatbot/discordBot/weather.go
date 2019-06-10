@@ -50,7 +50,7 @@ func GetTemp() (string, error) {
 		h := strings.Split(n[1], ":")
 		hour, _ := strconv.Atoi(h[0])
 		if thisHour <= hour {
-			info := "Fra kl: " + h[0] + ":00 vil temperaturen være " + strconv.Itoa(times.Temp.Temp) + " grader for " + w.Location.Name + "!"
+			info := "Fra kl " + strconv.Itoa(hour) + ":00 vil temperaturen være " + strconv.Itoa(times.Temp.Temp) + " grader for " + w.Location.Name + "!"
 			return info, nil
 		}
 	}

@@ -48,20 +48,23 @@ class PlayingTrack(Resource):
 ''' Endpoint to get user's playslists '''   
 class User_playlists(Resource):
     def get(self, username, limit):
-        playlists = spotify_api.user_playlist(username, limit)
-        return { 'playlists' : playlists }, 200
+        pass
+        # playlists = spotify_api.user_playlist(username, limit)
+        # return { 'playlists' : playlists }, 200
 
 ''' Endpoint to get the artist song '''        
 class Get_artist_songs(Resource):
     def get(self,choice):
-        song = spotify_api.get_artist(choice)
-        return {'songs' : song}
+        pass
+        # song = spotify_api.get_artist(choice)
+        # return {'songs' : song}
 
 ''' Endpoint for gets the user's top tracks '''
 class User_Top_Tracks(Resource):
     def get(self):
-        tracks = spotify_api.get_current_user_top_tracks()
-        return {'tracks' : tracks}
+        pass
+        # tracks = spotify_api.get_current_user_top_tracks()
+        # return {'tracks' : tracks}
 
 ''' Endpoint for trump stuff '''
 class Tronald_Dump(Resource):
