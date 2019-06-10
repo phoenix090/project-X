@@ -1,9 +1,12 @@
 from flask import Flask
 import spotify_api
 from flask_restful import Resource, Api
+import time
 
 app = Flask(__name__)
 api = Api(app)
+
+
 
 ''' Endpoint for home enpoint (/) '''  
 class Home(Resource):
@@ -33,8 +36,8 @@ class Playlist(Resource):
 ''' Endpoint for current user's information '''   
 class Me(Resource):
     def get(self):
-        me = spotify_api.get_current_user_detail()
-        return {'me' : me}, 200
+        data = spotify_api.get_current_user_detail()
+        return {'me' : data['user']}, data['status_code']
 
 ''' Endpoint for current playing song '''   
 class PlayingTrack(Resource):
@@ -87,9 +90,47 @@ class Play_previous_song(Resource):
         resp = spotify_api.play_previous_song()
         return { 'status': resp['status_code'] }, resp['status_code']
 
+''' Endpoint for playing the previous song '''
+class MyPlaylists(Resource):
+    def get(self):
+        resp = spotify_api.my_playlists()
+        albums = {}
+        albums['total_playlists'] = len(resp)
+        albums['playlists'] = resp
+
+        if albums['total_playlists']:
+            return { 'response': albums }, 200
+        return { 'Error': "Could not get playlists" }, 404
+
+''' Pauses the users playback '''
+class Pause(Resource):
+    def get(self):
+        resp = spotify_api.pause_song()
+        return {}, resp
+
+''' Resume son '''
+class Play(Resource):
+    def get(self):
+        resp = spotify_api.resume_song()
+        return {}, resp
+
+''' Repeat mode'''
+class Repeat(Resource):
+    def get(self):
+        resp = spotify_api.repeat_mode()
+        return {}, resp
+
+''' Adjust the volume '''
+class Set_volume(Resource):
+    def get(self, level):
+        resp = spotify_api.set_volume(level)
+        return {}, resp
+
+
 # spotify_api.get_current_playing_song()
 api.add_resource(Home, '/')
 api.add_resource(Me, '/me')
+api.add_resource(MyPlaylists, '/me/playlists')
 api.add_resource(User, '/user/<username>')
 api.add_resource(User_playlists, '/user/<username>/playlists/<limit>')
 api.add_resource(Playlist, '/playlist/<id>')
@@ -100,6 +141,9 @@ api.add_resource(PlayingTrack, '/current_song')
 api.add_resource(Devices, '/devices')
 api.add_resource(Play_next, '/next')
 api.add_resource(Play_previous_song, '/previous')
+api.add_resource(Pause, '/pause')
+api.add_resource(Play, '/play')
+api.add_resource(Set_volume, '/volume/<level>')
 
 
 if __name__ == '__main__':

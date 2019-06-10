@@ -71,6 +71,9 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	} else if strings.HasPrefix(m.Content, "!user/") && len(args) == 4 {
 		getUserPlaylists(s, m, args)
 		return
+	} else if strings.HasPrefix(m.Content, "!volume") {
+		volumeControl(s, m)
+		return
 	}
 
 	switch strings.ToLower(m.Content) {
@@ -98,12 +101,111 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		playNext(s, m)
 	case "!back", "!previous song", "!play back":
 		playPrevious(s, m)
-	//case "!apps":
-	//	apps(s, m)
+	case "!my playlists", "!my albums", "!all my albums", "!albums":
+		usersPlaylists(s, m)
+	case "!pause", "!stop":
+		pauseSong(s, m)
+	case "!play", "!continue":
+		resumeSong(s, m)
+	case "!repeat":
+		repeat(s, m)
+	case "!været", "!weather", "!hva er temperaturen nå", "!hva er tempen nå", "!temp":
+		weatherNow(s, m)
 	default:
 		fmt.Println(m.Content)
 		s.ChannelMessageSend(m.ChannelID, "Say what?")
 	}
+}
+
+//
+func weatherNow(s *discordgo.Session, m *discordgo.MessageCreate) {
+	temp, err := GetTemp()
+	if err != nil {
+		s.ChannelMessageSend(m.ChannelID, "Error")
+		return
+	}
+	s.ChannelMessageSend(m.ChannelID, temp)
+}
+
+// Sets repeat mode on
+func volumeControl(s *discordgo.Session, m *discordgo.MessageCreate) {
+	parts := strings.Split(m.Content, " ")
+	fmt.Println(parts)
+	url := "http://spotify_api:5001/volume/" + parts[1]
+
+	_, err := http.Get(url)
+	if err != nil {
+		s.ChannelMessageSend(m.ChannelID, "Error setting the volume level!")
+		fmt.Println(err)
+		return
+	}
+	s.ChannelMessageSend(m.ChannelID, "Volume adjusted :musical_note:")
+}
+
+// Sets repeat mode on
+func repeat(s *discordgo.Session, m *discordgo.MessageCreate) {
+	url := "http://spotify_api:5001/repeat"
+
+	_, err := http.Get(url)
+	if err != nil {
+		s.ChannelMessageSend(m.ChannelID, "Error setting on repeat mode!")
+		fmt.Println(err)
+		return
+	}
+	s.ChannelMessageSend(m.ChannelID, "Repeat mode on :musical_note:")
+}
+
+// Resumes the song
+func resumeSong(s *discordgo.Session, m *discordgo.MessageCreate) {
+	url := "http://spotify_api:5001/play"
+
+	_, err := http.Get(url)
+	if err != nil {
+		s.ChannelMessageSend(m.ChannelID, "Error resuming song!")
+		fmt.Println(err)
+		return
+	}
+	s.ChannelMessageSend(m.ChannelID, "Continue listening :musical_note:")
+}
+
+// Pauses the current playing song
+func pauseSong(s *discordgo.Session, m *discordgo.MessageCreate) {
+	url := "http://spotify_api:5001/pause"
+
+	_, err := http.Get(url)
+	if err != nil {
+		s.ChannelMessageSend(m.ChannelID, "Error pausing song!")
+		fmt.Println(err)
+		return
+	}
+	s.ChannelMessageSend(m.ChannelID, "Paused")
+}
+
+// Gets user's playlists
+func usersPlaylists(s *discordgo.Session, m *discordgo.MessageCreate) {
+	url := "http://spotify_api:5001/me/playlists"
+
+	resp, err := http.Get(url)
+	if err != nil {
+		s.ChannelMessageSend(m.ChannelID, "Error getting playlists!")
+		fmt.Println(err)
+		return
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		s.ChannelMessageSend(m.ChannelID, "Error reading response body!")
+		return
+	}
+	res := string(body)
+	//fmt.Println(res)
+	parts := strings.Split(res, "\"%\",")
+	for _, each := range parts {
+		fmt.Println(each)
+		_, err = s.ChannelMessageSend(m.ChannelID, each)
+		fmt.Println(err)
+	}
+
 }
 
 // Plays previous song
